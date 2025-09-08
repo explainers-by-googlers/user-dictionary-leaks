@@ -1,5 +1,7 @@
 # Explainer: Preventing User Dictionary Leaks via ::spelling-error and ::grammar-error CSS Pseudo-Elements
 
+## [Discuss](https://github.com/explainers-by-googlers/user-dictionary-leaks/issues)
+
 ## Introduction
 
 The user’s dictionary may contain sensitive information, for example some operating systems import the contents of the user’s address book to assist with the spelling of names/addresses. For this reason, when the `::spelling-error` and `::grammar-error` pseudo elements are applied to a text input field they [cannot be read directly](https://drafts.csswg.org/css-pseudo/#highlight-security) via JavaScript.
@@ -31,6 +33,6 @@ Safari is already in full compliance with both points, while Firefox and Chrome 
 
 We could require explicit user permission before applying hints (either at the site level or even for individual text fields). This would be quite disruptive to current user and site expectations, and would face significant friction in rollout even if it did better secure user data against indirect inferences sites could make.
 
-### Compatibility Concerns
+## Compatibility Concerns
 
 It’s possible that existing websites mostly accessed in Firefox, Chrome, or other browsers with similar spelling/grammar hint behavior, expect hints to appear on autofocus or for programmatically inserted text. That said, a temporary lack of spelling/grammar hints should not be the most significant breakage. The privacy risk we seek to mitigate here is significant enough that some inconvenience on those paths is probably acceptable as long as the user has a clear, direct way to cause hints to be applied (click on or typing into the text field).
