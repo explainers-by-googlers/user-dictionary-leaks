@@ -1,6 +1,8 @@
 # Explainer: Preventing User Dictionary Leaks via ::spelling-error and ::grammar-error CSS Pseudo-Elements
 
-## [Discuss](https://github.com/explainers-by-googlers/user-dictionary-leaks/issues)
+## Links
+* [Discuss](https://github.com/explainers-by-googlers/user-dictionary-leaks/issues)
+* [Security and Privacy Questionnaire](https://explainers-by-googlers.github.io/user-dictionary-leaks/security-privacy-questionnaire)
 
 ## Introduction
 
