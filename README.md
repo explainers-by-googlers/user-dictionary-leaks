@@ -1,185 +1,36 @@
-# Explainer for the TODO API
-
-**Instructions for the explainer author: Search for "todo" in this repository and update all the
-instances as appropriate. For the instances in `index.bs`, update the repository name, but you can
-leave the rest until you start the specification. Then delete the TODOs and this block of text.**
-
-This proposal is an early design sketch by [TODO: team] to describe the problem below and solicit
-feedback on the proposed solution. It has not been approved to ship in Chrome.
-
-TODO: Fill in the whole explainer template below using https://tag.w3.org/explainers/ as a
-reference. Look for [brackets].
-
-## Proponents
-
-- [Proponent team 1]
-- [Proponent team 2]
-- [etc.]
-
-## Participate
-- https://github.com/explainers-by-googlers/[your-repository-name]/issues
-- [Discussion forum]
-
-## Table of Contents [if the explainer is longer than one printed page]
-
-<!-- Update this table of contents by running `npx doctoc README.md` -->
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
-- [Introduction](#introduction)
-- [Goals](#goals)
-- [Non-goals](#non-goals)
-- [User research](#user-research)
-- [Use cases](#use-cases)
-  - [Use case 1](#use-case-1)
-  - [Use case 2](#use-case-2)
-- [[Potential Solution]](#potential-solution)
-  - [How this solution would solve the use cases](#how-this-solution-would-solve-the-use-cases)
-    - [Use case 1](#use-case-1-1)
-    - [Use case 2](#use-case-2-1)
-- [Detailed design discussion](#detailed-design-discussion)
-  - [[Tricky design choice #1]](#tricky-design-choice-1)
-  - [[Tricky design choice 2]](#tricky-design-choice-2)
-- [Considered alternatives](#considered-alternatives)
-  - [[Alternative 1]](#alternative-1)
-  - [[Alternative 2]](#alternative-2)
-- [Security and Privacy Considerations](#security-and-privacy-considerations)
-- [Stakeholder Feedback / Opposition](#stakeholder-feedback--opposition)
-- [References & acknowledgements](#references--acknowledgements)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+# Explainer: Preventing User Dictionary Leaks via ::spelling-error and ::grammar-error CSS Pseudo-Elements
 
 ## Introduction
 
-[The "executive summary" or "abstract".
-Explain in a few sentences what the goals of the project are,
-and a brief overview of how the solution works.
-This should be no more than 1-2 paragraphs.]
+The user’s dictionary may contain sensitive information, for example some operating systems import the contents of the user’s address book to assist with the spelling of names/addresses. For this reason, when the `::spelling-error` and `::grammar-error` pseudo elements are applied to a text input field they [cannot be read directly](https://drafts.csswg.org/css-pseudo/#highlight-security) via JavaScript.
+
+## Attack Model
+
+Although direct indicators of the `::spelling-error` and `::grammar-error` cannot be extracted, it’s possible to extract indirect information from browsers without rate limits on the application of these hints. In Chrome and Firefox, it’s possible to have an [autofocused](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Global_attributes/autofocus) text area cycle programmatically through a series of misspelled words, and for the site to monitor indicators of rendering performance to notice when hints are applied. This allows sites (or their third-party embeds) to detect which words are or aren’t in the user’s dictionary, which could leak sensitive information stored there (for example, their contacts' names). Safari already has rate limits in place which only check for and apply hints once per user interaction with the text field (e.g., a key input or click).
 
 ## Goals
 
-[What is the **end-user need** which this project aims to address? Make this section short, and
-elaborate in the Use cases section.]
+* Prevent user dictionary data from being extracted without user interaction/consent
 
-## Non-goals
+## Non-Goals
 
-[If there are "adjacent" goals which may appear to be in scope but aren't,
-enumerate them here. This section may be fleshed out as your design progresses and you encounter necessary technical and other trade-offs.]
+* Prevent sites from ever gaining any information about the user’s dictionary
 
-## User research
+## Proposed Solution
 
-[If any user research has been conducted to inform your design choices,
-discuss the process and findings. User research should be more common than it is.]
+We should amend section [3.7. Security Considerations for Highlighting](https://drafts.csswg.org/css-pseudo/#highlight-security) of the CSS Pseudo-Elements web specification to require the following to prevent indirect indicators of the user’s dictionary contents from being leaked:
 
-## Use cases
+* Hints must not be applied to a text field that has not had user interaction (an [autofocus](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Global_attributes/autofocus) is insufficient, there must be a click or key press of some kind relative to that field).
+* Hints must only be applied once per user interaction (the text cannot be changed programmatically and have hints applied without a click or key press of some kind relative to that field).
 
-[Describe in detail what problems end-users are facing, which this project is trying to solve. A
-common mistake in this section is to take a web developer's or server operator's perspective, which
-makes reviewers worry that the proposal will violate [RFC 8890, The Internet is for End
-Users](https://www.rfc-editor.org/rfc/rfc8890).]
+Safari is already in full compliance with both points, while Firefox and Chrome are only in partial compliance with the first one (they do count autofocused fields, but don’t apply new hints to fields that aren’t in active focus).
 
-### Use case 1
+## Alternatives Considered
 
-### Use case 2
+### Permissions Prompt
 
-<!-- In your initial explainer, you shouldn't be attached or appear attached to any of the potential
-solutions you describe below this. -->
+We could require explicit user permission before applying hints (either at the site level or even for individual text fields). This would be quite disruptive to current user and site expectations, and would face significant friction in rollout even if it did better secure user data against indirect inferences sites could make.
 
-## [Potential Solution]
+### Compatibility Concerns
 
-[For each related element of the proposed solution - be it an additional JS method, a new object, a new element, a new concept etc., create a section which briefly describes it.]
-
-```js
-// Provide example code - not IDL - demonstrating the design of the feature.
-
-// If this API can be used on its own to address a user need,
-// link it back to one of the scenarios in the goals section.
-
-// If you need to show how to get the feature set up
-// (initialized, or using permissions, etc.), include that too.
-```
-
-[Where necessary, provide links to longer explanations of the relevant pre-existing concepts and API.
-If there is no suitable external documentation, you might like to provide supplementary information as an appendix in this document, and provide an internal link where appropriate.]
-
-[If this is already specced, link to the relevant section of the spec.]
-
-[If spec work is in progress, link to the PR or draft of the spec.]
-
-[If you have more potential solutions in mind, add ## Potential Solution 2, 3, etc. sections.]
-
-### How this solution would solve the use cases
-
-[If there are a suite of interacting APIs, show how they work together to solve the use cases described.]
-
-#### Use case 1
-
-[Description of the end-user scenario]
-
-```js
-// Sample code demonstrating how to use these APIs to address that scenario.
-```
-
-#### Use case 2
-
-[etc.]
-
-## Detailed design discussion
-
-### [Tricky design choice #1]
-
-[Talk through the tradeoffs in coming to the specific design point you want to make.]
-
-```js
-// Illustrated with example code.
-```
-
-[This may be an open question,
-in which case you should link to any active discussion threads.]
-
-### [Tricky design choice 2]
-
-[etc.]
-
-## Considered alternatives
-
-[This should include as many alternatives as you can,
-from high level architectural decisions down to alternative naming choices.]
-
-### [Alternative 1]
-
-[Describe an alternative which was considered,
-and why you decided against it.]
-
-### [Alternative 2]
-
-[etc.]
-
-## Security and Privacy Considerations
-
-[Describe any interesting answers you give to the [Security and Privacy Self-Review
-Questionnaire](https://www.w3.org/TR/security-privacy-questionnaire/) and any interesting ways that
-your feature interacts with [Chromium's Web Platform Security
-Guidelines](https://chromium.googlesource.com/chromium/src/+/master/docs/security/web-platform-security-guidelines.md).]
-
-## Stakeholder Feedback / Opposition
-
-[Implementors and other stakeholders may already have publicly stated positions on this work. If you can, list them here with links to evidence as appropriate.]
-
-- [Implementor A] : Positive
-- [Stakeholder B] : No signals
-- [Implementor C] : Negative
-
-[If appropriate, explain the reasons given by other implementors for their concerns.]
-
-## References & acknowledgements
-
-[Your design will change and be informed by many people; acknowledge them in an ongoing way! It helps build community and, as we only get by through the contributions of many, is only fair.]
-
-[Unless you have a specific reason not to, these should be in alphabetical order.]
-
-Many thanks for valuable feedback and advice from:
-
-- [Person 1]
-- [Person 2]
-- [etc.]
+It’s possible that existing websites mostly accessed in Firefox, Chrome, or other browsers with similar spelling/grammar hint behavior, expect hints to appear on autofocus or for programmatically inserted text. That said, a temporary lack of spelling/grammar hints should not be the most significant breakage. The privacy risk we seek to mitigate here is significant enough that some inconvenience on those paths is probably acceptable as long as the user has a clear, direct way to cause hints to be applied (click on or typing into the text field).
